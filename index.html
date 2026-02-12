@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Manager</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
+        input, button { padding: 10px; margin: 5px; }
+        .task { padding: 10px; border: 1px solid #ddd; margin: 5px; }
+        .completed { text-decoration: line-through; color: gray; }
+    </style>
+</head>
+<body>
+    <h1>My Tasks</h1>
+    
+    <div>
+        <input type="text" id="taskInput" placeholder="Enter task...">
+        <button onclick="addTask()">Add Task</button>
+    </div>
+    
+    <div id="taskList"></div>
+    
+    <script>
+        // Get all tasks
+        async function loadTasks() {
+            const response = await fetch('http://localhost:8000/tasks');
+            const data = await response.json();
+            displayTasks(data.tasks);
+        }
+        
+        // Display tasks
+        function displayTasks(tasks) {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = tasks.map(task => `
+                <div class="task ${task.completed ? 'completed' : ''}">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id}, this.checked)">
+                    ${task.title}
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                </div>
+            `).join('');
+        }
+        
+        // Add new task
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            const title = input.value;
+            
+            if (!title) return;
+            
+            await fetch('http://localhost:8000/tasks', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title})
+            });
+            
+            input.value = '';
+            loadTasks();
+        }
+        
+        // Toggle task completion
+        async function toggleTask(id, completed) {
+            await fetch(`http://localhost:8000/tasks/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({completed})
+            });
+            loadTasks();
+        }
+        
+        // Delete task
+        async function deleteTask(id) {
+            await fetch(`http://localhost:8000/tasks/${id}`, {
+                method: 'DELETE'
+            });
+            loadTasks();
+        }
+        
+        // Load tasks on page load
+        loadTasks();
+    </script>
+</body>
+</html>
