@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px 28px 28px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .body {
+            padding: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-cancel {
+            background: #e8e8e8;
+            color: #666;
+        }
+
+        .btn-cancel:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .workout-list {
+            list-style: none;
+        }
+
+        .workout-item {
+            padding: 16px;
+            background: #f9f9fb;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .workout-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .workout-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .workout-item-header h3 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .workout-item-header .date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .workout-details {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .workout-detail {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .workout-detail strong {
+            color: #764ba2;
+        }
+
+        .workout-notes {
+            font-size: 13px;
+            color: #888;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .workout-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .workout-actions button {
+            background: none;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .edit-btn {
+            color: #667eea;
+        }
+
+        .edit-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .delete-btn {
+            color: #ccc;
+        }
+
+        .delete-btn:hover {
+            color: #e74c3c;
+            background: #fdecea;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #b0b0b0;
+            padding: 40px 0;
+            font-size: 15px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .motivation-banner {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .motivation-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .motivation-banner:hover img {
+            transform: scale(1.05);
+        }
+
+        .motivation-banner .quote-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 24px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="motivation-banner" id="motivation-banner" onclick="loadMotivation()" title="Click for new motivation">
+                <img id="motivation-img" src="" alt="Motivation" />
+                <div class="quote-overlay" id="motivation-quote"></div>
+            </div>
+
+            <div class="header">
+                <h1>Workout Tracker</h1>
+                <p>Log your exercises, track your progress</p>
+            </div>
+
+            <div class="body">
+                <form id="workout-form" onsubmit="handleSubmit(event)">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="exercise">Exercise</label>
+                            <input type="text" id="exercise" placeholder="e.g. Bench Press" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="sets">Sets</label>
+                            <input type="number" id="sets" placeholder="0" min="0" />
+                        </div>
+                        <div class="form-group">
+                            <label for="reps">Reps</label>
+                            <input type="number" id="reps" placeholder="0" min="0" />
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight (lbs)</label>
+                            <input type="number" id="weight" placeholder="0" min="0" step="0.5" />
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Duration (min)</label>
+                            <input type="number" id="duration" placeholder="0" min="0" />
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="notes">Notes</label>
+                            <textarea id="notes" placeholder="Optional notes..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn" id="submit-btn">Log Workout</button>
+                        <button type="button" class="btn btn-cancel" id="cancel-btn" style="display: none;" onclick="cancelEdit()">Cancel</button>
+                    </div>
+                </form>
+
+                <ul class="workout-list" id="workout-list"></ul>
+            </div>
+
+            <div class="stats" id="stats" style="display: none;">
+                <span id="stats-total"></span>
+                <span id="stats-duration"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5001";
+
+        // Track which workout we're editing (null means adding new)
+        let editingId = null;
+
+        // Load all workouts from the API and render them
+        async function loadWorkouts() {
+            const response = await fetch(`${API_URL}/workouts`);
+            const workouts = await response.json();
+            renderWorkouts(workouts);
+        }
+
+        // Render the workout list and stats
+        function renderWorkouts(workouts) {
+            const list = document.getElementById("workout-list");
+            const stats = document.getElementById("stats");
+
+            if (workouts.length === 0) {
+                list.innerHTML = '<p class="empty-message">No workouts logged yet. Add one above!</p>';
+                stats.style.display = "none";
+                return;
+            }
+
+            list.innerHTML = workouts.map(w => `
+                <li class="workout-item">
+                    <div class="workout-item-header">
+                        <h3>${w.exercise}</h3>
+                        <span class="date">${w.date}</span>
+                    </div>
+                    <div class="workout-details">
+                        ${w.sets ? `<span class="workout-detail"><strong>${w.sets}</strong> sets</span>` : ""}
+                        ${w.reps ? `<span class="workout-detail"><strong>${w.reps}</strong> reps</span>` : ""}
+                        ${w.weight ? `<span class="workout-detail"><strong>${w.weight}</strong> lbs</span>` : ""}
+                        ${w.duration ? `<span class="workout-detail"><strong>${w.duration}</strong> min</span>` : ""}
+                    </div>
+                    ${w.notes ? `<div class="workout-notes">${w.notes}</div>` : ""}
+                    <div class="workout-actions">
+                        <button class="edit-btn" onclick="startEdit(${w.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteWorkout(${w.id})">Delete</button>
+                    </div>
+                </li>
+            `).join("");
+
+            // Calculate and show stats
+            const totalDuration = workouts.reduce((sum, w) => sum + (w.duration || 0), 0);
+            document.getElementById("stats-total").textContent = `${workouts.length} workout${workouts.length !== 1 ? "s" : ""}`;
+            document.getElementById("stats-duration").textContent = `${totalDuration} min total`;
+            stats.style.display = "flex";
+        }
+
+        // Handle form submission for both adding and editing
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const data = {
+                exercise: document.getElementById("exercise").value.trim(),
+                sets: parseInt(document.getElementById("sets").value) || 0,
+                reps: parseInt(document.getElementById("reps").value) || 0,
+                weight: parseFloat(document.getElementById("weight").value) || 0,
+                duration: parseInt(document.getElementById("duration").value) || 0,
+                notes: document.getElementById("notes").value.trim(),
+            };
+
+            if (!data.exercise) return;
+
+            if (editingId) {
+                // Update existing workout
+                await fetch(`${API_URL}/workouts/${editingId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+                cancelEdit();
+            } else {
+                // Create new workout
+                await fetch(`${API_URL}/workouts`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+            }
+
+            // Clear the form and reload the list
+            document.getElementById("workout-form").reset();
+            loadWorkouts();
+        }
+
+        // Start editing a workout — fill the form with existing data
+        async function startEdit(id) {
+            const response = await fetch(`${API_URL}/workouts/${id}`);
+            const workout = await response.json();
+
+            document.getElementById("exercise").value = workout.exercise;
+            document.getElementById("sets").value = workout.sets || "";
+            document.getElementById("reps").value = workout.reps || "";
+            document.getElementById("weight").value = workout.weight || "";
+            document.getElementById("duration").value = workout.duration || "";
+            document.getElementById("notes").value = workout.notes || "";
+
+            editingId = id;
+            document.getElementById("submit-btn").textContent = "Update Workout";
+            document.getElementById("cancel-btn").style.display = "inline-block";
+
+            // Scroll to the form
+            document.getElementById("exercise").focus();
+        }
+
+        // Cancel editing — reset form back to "add" mode
+        function cancelEdit() {
+            editingId = null;
+            document.getElementById("submit-btn").textContent = "Log Workout";
+            document.getElementById("cancel-btn").style.display = "none";
+            document.getElementById("workout-form").reset();
+        }
+
+        // Delete a workout by its ID
+        async function deleteWorkout(id) {
+            await fetch(`${API_URL}/workouts/${id}`, {
+                method: "DELETE",
+            });
+            loadWorkouts();
+        }
+
+        // Load a random motivational image and quote from the API
+        async function loadMotivation() {
+            const response = await fetch(`${API_URL}/motivation`);
+            const data = await response.json();
+            document.getElementById("motivation-img").src = data.url;
+            document.getElementById("motivation-quote").textContent = `"${data.quote}"`;
+        }
+
+        // Load workouts and motivation when the page first loads
+        loadWorkouts();
+        loadMotivation();
+    </script>
+</body>
+</html>
