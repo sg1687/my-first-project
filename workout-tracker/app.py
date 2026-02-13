@@ -7,11 +7,42 @@ from flask_cors import CORS
 # Import date from datetime to auto-set the workout date
 from datetime import date
 
+# Import random to pick a random motivational image
+import random
+
 # Create an instance of the Flask app — this is the core of your API
 app = Flask(__name__)
 
 # Enable CORS so the browser doesn't block requests from the frontend
 CORS(app)
+
+# A list of motivational fitness image URLs (from Unsplash)
+motivational_images = [
+    {
+        "url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
+        "quote": "The only bad workout is the one that didn't happen.",
+    },
+    {
+        "url": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800",
+        "quote": "Push yourself, because no one else is going to do it for you.",
+    },
+    {
+        "url": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800",
+        "quote": "Strength does not come from the body. It comes from the will.",
+    },
+    {
+        "url": "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800",
+        "quote": "Your body can stand almost anything. It's your mind you have to convince.",
+    },
+    {
+        "url": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800",
+        "quote": "The pain you feel today will be the strength you feel tomorrow.",
+    },
+    {
+        "url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
+        "quote": "Don't stop when you're tired. Stop when you're done.",
+    },
+]
 
 # A list to store our workouts in memory (resets when the server restarts)
 workouts = []
@@ -111,6 +142,15 @@ def delete_workout(workout_id):
 
     # If no workout matched, return a 404 Not Found error
     return jsonify({"error": "Workout not found"}), 404
+
+
+# Define a route for GET /motivation — this returns a random motivational image and quote
+@app.route("/motivation", methods=["GET"])
+def get_motivation():
+    # Pick a random image/quote pair from the list
+    pick = random.choice(motivational_images)
+    # Return the image URL and quote as JSON
+    return jsonify(pick), 200
 
 
 # This block runs only when you execute this file directly (not when imported)
