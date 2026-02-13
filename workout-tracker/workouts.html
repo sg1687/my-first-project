@@ -239,6 +239,147 @@
             color: #999;
         }
 
+        .timer-section {
+            background: #f9f9fb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .timer-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .timer-presets {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .timer-presets button {
+            padding: 6px 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+
+        .timer-presets button:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .timer-presets button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .timer-display {
+            font-size: 64px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 16px;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .timer-display.running {
+            color: #667eea;
+        }
+
+        .timer-display.done {
+            color: #27ae60;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .timer-controls button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .timer-controls button:hover {
+            transform: translateY(-1px);
+        }
+
+        .timer-controls button:active {
+            transform: translateY(0);
+        }
+
+        .timer-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .timer-start:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .timer-reset {
+            background: #e8e8e8;
+            color: #666;
+        }
+
+        .timer-reset:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-progress {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
+            position: relative;
+        }
+
+        .timer-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .timer-progress .progress-ring {
+            transition: stroke-dashoffset 0.3s;
+        }
+
+        .timer-progress .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-progress .timer-text.running {
+            color: #667eea;
+        }
+
+        .timer-progress .timer-text.done {
+            color: #27ae60;
+        }
+
         .motivation-banner {
             position: relative;
             height: 200px;
@@ -317,6 +458,34 @@
                         <button type="button" class="btn btn-cancel" id="cancel-btn" style="display: none;" onclick="cancelEdit()">Cancel</button>
                     </div>
                 </form>
+
+                <div class="timer-section">
+                    <h3>Rest Timer</h3>
+                    <div class="timer-presets">
+                        <button onclick="setTimer(30)">0:30</button>
+                        <button onclick="setTimer(60)" class="active">1:00</button>
+                        <button onclick="setTimer(90)">1:30</button>
+                        <button onclick="setTimer(120)">2:00</button>
+                        <button onclick="setTimer(180)">3:00</button>
+                    </div>
+                    <div class="timer-progress">
+                        <svg width="120" height="120">
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="#e8e8e8" stroke-width="8" />
+                            <circle class="progress-ring" id="progress-ring" cx="60" cy="60" r="52" fill="none" stroke="url(#timer-gradient)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="0" />
+                            <defs>
+                                <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#667eea" />
+                                    <stop offset="100%" stop-color="#764ba2" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="timer-text" id="timer-text">1:00</span>
+                    </div>
+                    <div class="timer-controls">
+                        <button class="timer-start" id="timer-start-btn" onclick="toggleTimer()">Start</button>
+                        <button class="timer-reset" onclick="resetTimer()">Reset</button>
+                    </div>
+                </div>
 
                 <ul class="workout-list" id="workout-list"></ul>
             </div>
@@ -451,6 +620,116 @@
                 method: "DELETE",
             });
             loadWorkouts();
+        }
+
+        // --- Rest Timer ---
+        let timerSeconds = 60;       // Currently selected duration
+        let timerRemaining = 60;     // Seconds left on the countdown
+        let timerInterval = null;    // Interval ID for the countdown
+        const CIRCUMFERENCE = 2 * Math.PI * 52; // Circle circumference for progress ring
+
+        // Set the timer to a preset duration
+        function setTimer(seconds) {
+            // Stop any running timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timerSeconds = seconds;
+            timerRemaining = seconds;
+            updateTimerDisplay();
+            // Update active preset button
+            document.querySelectorAll(".timer-presets button").forEach(btn => {
+                const btnSeconds = parseTimerButton(btn.textContent);
+                btn.classList.toggle("active", btnSeconds === seconds);
+            });
+            document.getElementById("timer-start-btn").textContent = "Start";
+            document.getElementById("timer-text").className = "timer-text";
+        }
+
+        // Parse "1:30" format to seconds
+        function parseTimerButton(text) {
+            const parts = text.split(":");
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        }
+
+        // Format seconds as "M:SS"
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s.toString().padStart(2, "0")}`;
+        }
+
+        // Update the timer display and progress ring
+        function updateTimerDisplay() {
+            document.getElementById("timer-text").textContent = formatTime(timerRemaining);
+            const progress = timerRemaining / timerSeconds;
+            const offset = CIRCUMFERENCE * (1 - progress);
+            document.getElementById("progress-ring").style.strokeDashoffset = offset;
+        }
+
+        // Start or pause the timer
+        function toggleTimer() {
+            const btn = document.getElementById("timer-start-btn");
+            const timerText = document.getElementById("timer-text");
+            if (timerInterval) {
+                // Pause
+                clearInterval(timerInterval);
+                timerInterval = null;
+                btn.textContent = "Start";
+                timerText.className = "timer-text";
+            } else {
+                // If timer is done, reset first
+                if (timerRemaining <= 0) {
+                    timerRemaining = timerSeconds;
+                    updateTimerDisplay();
+                }
+                // Start
+                btn.textContent = "Pause";
+                timerText.className = "timer-text running";
+                timerInterval = setInterval(() => {
+                    timerRemaining--;
+                    updateTimerDisplay();
+                    if (timerRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        btn.textContent = "Start";
+                        timerText.className = "timer-text done";
+                        timerText.textContent = "Done!";
+                        // Play a beep sound
+                        playBeep();
+                    }
+                }, 1000);
+            }
+        }
+
+        // Reset timer to selected duration
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timerRemaining = timerSeconds;
+            updateTimerDisplay();
+            document.getElementById("timer-start-btn").textContent = "Start";
+            document.getElementById("timer-text").className = "timer-text";
+        }
+
+        // Play a short beep sound when the timer finishes
+        function playBeep() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            // Play 3 short beeps
+            for (let i = 0; i < 3; i++) {
+                const oscillator = ctx.createOscillator();
+                const gain = ctx.createGain();
+                oscillator.connect(gain);
+                gain.connect(ctx.destination);
+                oscillator.frequency.value = 880;
+                oscillator.type = "sine";
+                gain.gain.value = 0.3;
+                oscillator.start(ctx.currentTime + i * 0.2);
+                oscillator.stop(ctx.currentTime + i * 0.2 + 0.15);
+            }
         }
 
         // Load a random motivational image and quote from the API
