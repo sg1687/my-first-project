@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        header h1 { font-size: 2rem; color: #3b82f6; margin-bottom: 0.5rem; }
+        header p { color: #94a3b8; font-size: 0.95rem; }
+
+        /* Tabs to switch between scrapers */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab:hover { border-color: #3b82f6; color: #e2e8f0; }
+        .tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+        .search-bar {
+            max-width: 600px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-bar input:focus { border-color: #3b82f6; }
+
+        .search-bar button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-bar button:hover { background: #2563eb; }
+
+        .status {
+            text-align: center;
+            color: #94a3b8;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .status.loading { color: #facc15; }
+
+        .results-grid {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            gap: 1rem;
+        }
+
+        /* Job listing card */
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .card h3 { font-size: 1.15rem; color: #f1f5f9; margin-bottom: 0.5rem; }
+        .card .subtitle { color: #3b82f6; font-weight: 600; margin-bottom: 0.25rem; }
+        .card .meta { color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.75rem; }
+
+        .card .link-btn {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: #3b82f620;
+            color: #3b82f6;
+            border: 1px solid #3b82f640;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .card .link-btn:hover { background: #3b82f640; }
+
+        /* HN-specific styles */
+        .card .points { color: #f97316; font-weight: 600; }
+
+        .card .hn-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .concepts {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background: #1e293b;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .concepts h2 { color: #3b82f6; margin-bottom: 1rem; }
+
+        .concepts ul {
+            list-style: none;
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .concepts li {
+            padding: 0.5rem 0.75rem;
+            background: #0f172a;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .concepts code {
+            color: #facc15;
+            background: #334155;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Web Scraper</h1>
+        <p>Scraping multiple sites with Python — each site has different HTML!</p>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('jobs')">Job Listings</button>
+            <button class="tab" onclick="switchTab('hackernews')">Hacker News</button>
+        </div>
+    </header>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div class="status" id="status">Loading...</div>
+    <div class="results-grid" id="resultsGrid"></div>
+
+    <div class="concepts" id="conceptsSection"></div>
+
+    <script>
+        let currentTab = "jobs";
+
+        // Listen for Enter key
+        document.getElementById("searchInput").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") doSearch();
+        });
+
+        // Switch between scrapers
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update active tab style
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+            event.target.classList.add("active");
+
+            // Update placeholder text
+            const input = document.getElementById("searchInput");
+            if (tab === "jobs") {
+                input.placeholder = "Search jobs (e.g. Python, Engineer, Remote)...";
+            } else {
+                input.placeholder = "Search stories (e.g. AI, Rust, startup)...";
+            }
+            input.value = "";
+
+            // Update concepts
+            updateConcepts();
+
+            // Fetch data for the new tab
+            doSearch();
+        }
+
+        async function doSearch() {
+            if (currentTab === "jobs") {
+                await fetchJobs();
+            } else {
+                await fetchHackerNews();
+            }
+        }
+
+        // Fetch and render job listings
+        async function fetchJobs() {
+            const query = document.getElementById("searchInput").value.trim();
+            const status = document.getElementById("status");
+            const grid = document.getElementById("resultsGrid");
+
+            status.className = "status loading";
+            status.textContent = "Scraping job listings...";
+            grid.innerHTML = "";
+
+            let url = "/api/jobs";
+            if (query) url += `?q=${encodeURIComponent(query)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                status.className = "status";
+                const note = data.search ? ` matching "${data.search}"` : "";
+                status.textContent = `Found ${data.count} jobs${note}`;
+
+                data.jobs.forEach(job => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.innerHTML = `
+                        <h3>${esc(job.title)}</h3>
+                        <div class="subtitle">${esc(job.company)}</div>
+                        <div class="meta">${esc(job.location)}</div>
+                        ${job.apply_link ? `<a class="link-btn" href="${esc(job.apply_link)}" target="_blank">View Details</a>` : ""}
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                status.className = "status";
+                status.textContent = "Error: Could not fetch jobs. Is the server running?";
+            }
+        }
+
+        // Fetch and render Hacker News stories
+        async function fetchHackerNews() {
+            const query = document.getElementById("searchInput").value.trim();
+            const status = document.getElementById("status");
+            const grid = document.getElementById("resultsGrid");
+
+            status.className = "status loading";
+            status.textContent = "Scraping Hacker News front page...";
+            grid.innerHTML = "";
+
+            let url = "/api/hackernews";
+            if (query) url += `?q=${encodeURIComponent(query)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                status.className = "status";
+                const note = data.search ? ` matching "${data.search}"` : "";
+                status.textContent = `Found ${data.count} stories${note}`;
+
+                data.stories.forEach(story => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.innerHTML = `
+                        <h3>${esc(story.title)}</h3>
+                        ${story.site ? `<div class="subtitle">${esc(story.site)}</div>` : ""}
+                        <div class="hn-meta">
+                            <span class="points">${esc(story.points)}</span>
+                            <span>by ${esc(story.author)}</span>
+                            <span>${esc(story.time_ago)}</span>
+                            <span>${esc(story.comments)}</span>
+                        </div>
+                        ${story.url ? `<a class="link-btn" href="${esc(story.url)}" target="_blank">Read</a>` : ""}
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                status.className = "status";
+                status.textContent = "Error: Could not fetch stories. Is the server running?";
+            }
+        }
+
+        // Show relevant concepts for each tab
+        function updateConcepts() {
+            const section = document.getElementById("conceptsSection");
+            if (currentTab === "jobs") {
+                section.innerHTML = `
+                    <h2>What You're Learning — Job Scraper</h2>
+                    <ul>
+                        <li><code>soup.find_all("div", class_="card-content")</code> — This site uses clean div-based cards</li>
+                        <li><code>card.find("h2", class_="title")</code> — Each card has nested elements for title, company, location</li>
+                        <li><code>.find_next_sibling("footer")</code> — Navigate to a sibling element (the card footer with the Apply link)</li>
+                    </ul>
+                `;
+            } else {
+                section.innerHTML = `
+                    <h2>What You're Learning — Hacker News Scraper</h2>
+                    <ul>
+                        <li><code>soup.find_all("tr", class_="athing")</code> — HN uses old-school table rows instead of divs</li>
+                        <li><code>row.find_next_sibling("tr")</code> — Each story spans TWO rows: title + metadata below it</li>
+                        <li><code>find("span", class_="score")</code> — Points, author, comments are all in the second row</li>
+                        <li>Key lesson: every website structures its HTML differently — you must inspect and adapt!</li>
+                    </ul>
+                `;
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function esc(text) {
+            const div = document.createElement("div");
+            div.textContent = text || "";
+            return div.innerHTML;
+        }
+
+        // Initialize
+        updateConcepts();
+        doSearch();
+    </script>
+</body>
+</html>
