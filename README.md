@@ -1,32 +1,55 @@
 # My First Project
 
-A learning project with Python scripts and a Flask REST API for task management.
+A learning project with Python scripts and Flask REST APIs for task management.
 
 ## Project Structure
 
 - `hello.py`, `hello_world.py` — Introductory Python scripts
 - `calculator.py` — CLI calculator
 - `my-first-api/app.py` — Flask REST API (task CRUD)
+- `todo-api/app.py` — Todo List API with full CRUD
+- `todo-api/index.html` — Frontend for the Todo API
 - `index.html` — HTML frontend
 
 ## Tech Stack
 
 - Python 3
 - Flask
+- flask-cors
 
 ## Getting Started
 
 ### Run Python scripts
 
 ```bash
-python hello.py
-python calculator.py
+python3 hello.py
+python3 calculator.py
 ```
 
-### Run the Flask API
+### Run the Task API
 
 ```bash
 cd my-first-api
 source venv/bin/activate
 python app.py  # Starts on port 8000
 ```
+
+### Run the Todo API
+
+```bash
+pip3 install flask flask-cors
+cd todo-api
+python3 app.py  # Starts on port 5000
+```
+
+Then open `todo-api/index.html` in your browser to use the frontend.
+
+#### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/todos` | List all todos |
+| GET | `/todos/<id>` | Get a single todo |
+| POST | `/todos` | Create a new todo |
+| PUT | `/todos/<id>` | Update a todo |
+| DELETE | `/todos/<id>` | Delete a todo |
