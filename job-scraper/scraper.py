@@ -5,6 +5,7 @@ Each site has its own scraping function — this teaches you that
 every website's HTML is different, so you need to inspect and adapt.
 """
 
+import re  # Regular expressions — for extracting numbers from text like "4 hours ago"
 import requests  # Library to make HTTP requests (like a browser visiting a page)
 from bs4 import BeautifulSoup  # Library to parse and search through HTML
 
@@ -82,11 +83,38 @@ def scrape_jobs(search_term=None):
 # A completely different HTML structure — this is the key lesson!
 # ============================================================
 
-def scrape_hackernews(search_term=None):
+def parse_time_ago(time_str):
+    """
+    Convert a string like '4 hours ago' into total minutes.
+    This lets us sort stories by how recent they are.
+    Uses regular expressions (re) to extract the number from the string.
+    """
+    if not time_str:
+        return 0
+
+    # re.search(r"\d+", text) finds the first number in the text
+    match = re.search(r"(\d+)", time_str)
+    if not match:
+        return 0
+
+    num = int(match.group(1))
+
+    # Convert to minutes based on the time unit
+    if "minute" in time_str:
+        return num
+    elif "hour" in time_str:
+        return num * 60
+    elif "day" in time_str:
+        return num * 60 * 24
+    return 0
+
+
+def scrape_hackernews(search_term=None, sort_by="default"):
     """
     Scrape the Hacker News front page.
     HN uses a table-based layout (old-school HTML), so the parsing
     logic is very different from the job listings site.
+    sort_by: "default" (HN ranking), "newest", or "oldest"
     Returns a list of story dictionaries.
     """
 
@@ -154,6 +182,9 @@ def scrape_hackernews(search_term=None):
                     if "comment" in a.text or "discuss" in a.text:
                         comments = a.text.strip()
 
+        # Convert "4 hours ago" to a number (240 minutes) for sorting
+        minutes_ago = parse_time_ago(time_ago)
+
         story = {
             "title": title,
             "url": story_url,
@@ -161,6 +192,7 @@ def scrape_hackernews(search_term=None):
             "points": points,
             "author": author,
             "time_ago": time_ago,
+            "minutes_ago": minutes_ago,
             "comments": comments,
         }
 
@@ -175,6 +207,14 @@ def scrape_hackernews(search_term=None):
                 stories.append(story)
         else:
             stories.append(story)
+
+    # Sort stories if requested
+    # sorted() creates a new list, key= tells it what to sort by
+    # reverse=True means descending order (biggest number first = oldest)
+    if sort_by == "newest":
+        stories = sorted(stories, key=lambda s: s["minutes_ago"])
+    elif sort_by == "oldest":
+        stories = sorted(stories, key=lambda s: s["minutes_ago"], reverse=True)
 
     return stories
 

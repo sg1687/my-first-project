@@ -38,11 +38,12 @@ def get_jobs():
 # API endpoint that returns Hacker News stories as JSON
 @app.route("/api/hackernews")
 def get_hackernews():
-    # Get the optional search query from the URL: /api/hackernews?q=python
+    # Get the optional search query and sort: /api/hackernews?q=python&sort=newest
     search_term = request.args.get("q", None)
+    sort_by = request.args.get("sort", "default")
 
-    # Run the HN scraper
-    stories = scrape_hackernews(search_term=search_term)
+    # Run the HN scraper with sort option
+    stories = scrape_hackernews(search_term=search_term, sort_by=sort_by)
 
     # Return the results as JSON
     return jsonify({

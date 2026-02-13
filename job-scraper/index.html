@@ -81,6 +81,59 @@
 
         .search-bar button:hover { background: #2563eb; }
 
+        /* Quick filter chips */
+        .filters {
+            max-width: 600px;
+            margin: 0 auto 0.5rem;
+            padding: 0 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-chip {
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            border: 1px solid #334155;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip:hover { border-color: #3b82f6; color: #e2e8f0; }
+        .filter-chip.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+        /* Sort dropdown */
+        .sort-bar {
+            max-width: 600px;
+            margin: 0 auto 0.5rem;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .sort-bar label { color: #94a3b8; font-size: 0.85rem; }
+
+        .sort-bar select {
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .sort-bar select:focus { border-color: #3b82f6; }
+
+        .hidden { display: none !important; }
+
         .status {
             text-align: center;
             color: #94a3b8;
@@ -186,6 +239,25 @@
         <button onclick="doSearch()">Search</button>
     </div>
 
+    <!-- Quick filter chips for jobs tab -->
+    <div class="filters" id="jobFilters">
+        <button class="filter-chip active" onclick="applyFilter('', this)">All</button>
+        <button class="filter-chip" onclick="applyFilter('product manager', this)">Product Manager</button>
+        <button class="filter-chip" onclick="applyFilter('python', this)">Python</button>
+        <button class="filter-chip" onclick="applyFilter('engineer', this)">Engineer</button>
+        <button class="filter-chip" onclick="applyFilter('developer', this)">Developer</button>
+    </div>
+
+    <!-- Sort dropdown for HN tab -->
+    <div class="sort-bar hidden" id="hnSort">
+        <label for="sortSelect">Sort by:</label>
+        <select id="sortSelect" onchange="doSearch()">
+            <option value="default">HN Ranking</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+        </select>
+    </div>
+
     <div class="status" id="status">Loading...</div>
     <div class="results-grid" id="resultsGrid"></div>
 
@@ -193,11 +265,25 @@
 
     <script>
         let currentTab = "jobs";
+        let activeFilter = "";  // Currently active quick filter
 
         // Listen for Enter key
         document.getElementById("searchInput").addEventListener("keydown", function(e) {
             if (e.key === "Enter") doSearch();
         });
+
+        // Apply a quick filter chip (jobs tab)
+        function applyFilter(term, btn) {
+            activeFilter = term;
+
+            // Update active chip style
+            document.querySelectorAll("#jobFilters .filter-chip").forEach(c => c.classList.remove("active"));
+            btn.classList.add("active");
+
+            // Put the filter text in the search box so you can see what's active
+            document.getElementById("searchInput").value = term;
+            doSearch();
+        }
 
         // Switch between scrapers
         function switchTab(tab) {
@@ -207,6 +293,10 @@
             document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
             event.target.classList.add("active");
 
+            // Show/hide filter chips and sort dropdown based on tab
+            document.getElementById("jobFilters").classList.toggle("hidden", tab !== "jobs");
+            document.getElementById("hnSort").classList.toggle("hidden", tab !== "hackernews");
+
             // Update placeholder text
             const input = document.getElementById("searchInput");
             if (tab === "jobs") {
@@ -215,6 +305,11 @@
                 input.placeholder = "Search stories (e.g. AI, Rust, startup)...";
             }
             input.value = "";
+            activeFilter = "";
+
+            // Reset filter chips
+            document.querySelectorAll("#jobFilters .filter-chip").forEach(c => c.classList.remove("active"));
+            document.querySelector("#jobFilters .filter-chip").classList.add("active");
 
             // Update concepts
             updateConcepts();
@@ -279,8 +374,9 @@
             status.textContent = "Scraping Hacker News front page...";
             grid.innerHTML = "";
 
-            let url = "/api/hackernews";
-            if (query) url += `?q=${encodeURIComponent(query)}`;
+            const sort = document.getElementById("sortSelect").value;
+            let url = `/api/hackernews?sort=${sort}`;
+            if (query) url += `&q=${encodeURIComponent(query)}`;
 
             try {
                 const response = await fetch(url);
