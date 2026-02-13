@@ -1,8 +1,14 @@
 # Import the Flask class and helper functions from the flask library
 from flask import Flask, request, jsonify
 
+# Import CORS to allow the frontend (HTML file) to talk to the API
+from flask_cors import CORS
+
 # Create an instance of the Flask app — this is the core of your API
 app = Flask(__name__)
+
+# Enable CORS so the browser doesn't block requests from the frontend
+CORS(app)
 
 # A list to store our todos in memory (resets when the server restarts)
 todos = []
