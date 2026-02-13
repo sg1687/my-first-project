@@ -9,6 +9,8 @@ A learning project with Python scripts and Flask REST APIs for task management.
 - `my-first-api/app.py` — Flask REST API (task CRUD)
 - `todo-api/app.py` — Todo List API with full CRUD
 - `todo-api/index.html` — Frontend for the Todo API
+- `workout-tracker/app.py` — Workout Tracker API with full CRUD
+- `workout-tracker/index.html` — Frontend for the Workout Tracker
 - `index.html` — HTML frontend
 
 ## Tech Stack
@@ -43,6 +45,26 @@ python3 app.py  # Starts on port 5000
 ```
 
 Then open `todo-api/index.html` in your browser to use the frontend.
+
+### Run the Workout Tracker
+
+```bash
+pip3 install flask flask-cors
+cd workout-tracker
+python3 app.py  # Starts on port 5001
+```
+
+Then open `workout-tracker/index.html` in your browser to use the frontend.
+
+#### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/workouts` | List all workouts |
+| GET | `/workouts/<id>` | Get a single workout |
+| POST | `/workouts` | Log a new workout |
+| PUT | `/workouts/<id>` | Update a workout |
+| DELETE | `/workouts/<id>` | Delete a workout |
 
 #### API Endpoints
 
