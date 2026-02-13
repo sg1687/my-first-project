@@ -1,5 +1,5 @@
 # Import the Flask class and helper functions from the flask library
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 
 # Import CORS to allow the frontend (HTML file) to talk to the API
 from flask_cors import CORS
@@ -49,6 +49,20 @@ workouts = []
 
 # A counter to give each workout a unique ID
 next_id = 1
+
+
+# Define a route for the landing page — serves index.html
+@app.route("/")
+def serve_landing():
+    # Send the index.html file from the same directory as this script
+    return send_from_directory(".", "index.html")
+
+
+# Define a route for the workouts page — serves workouts.html
+@app.route("/log")
+def serve_workouts():
+    # Send the workouts.html file from the same directory as this script
+    return send_from_directory(".", "workouts.html")
 
 
 # Define a route for GET /workouts — this returns all workouts
@@ -157,4 +171,5 @@ def get_motivation():
 if __name__ == "__main__":
     # Start the Flask development server on port 5001 with debug mode on
     # Using port 5001 to avoid conflict with the Todo API on port 5000
-    app.run(debug=True, port=5001)
+    # host="0.0.0.0" makes the server accessible from other devices on the network
+    app.run(debug=True, port=5001, host="0.0.0.0")

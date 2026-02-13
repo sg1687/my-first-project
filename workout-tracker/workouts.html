@@ -329,7 +329,8 @@
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:5001";
+        // Use the current page's origin so it works from any device on the network
+        const API_URL = window.location.origin;
 
         // Track which workout we're editing (null means adding new)
         let editingId = null;
