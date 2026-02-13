@@ -5,6 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Tracker</title>
     <style>
+        :root {
+            --bg-card: #ffffff;
+            --bg-item: #f9f9fb;
+            --bg-input: #ffffff;
+            --border-input: #e8e8e8;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --text-faint: #b0b0b0;
+            --text-notes: #888888;
+            --border-stats: #f0f0f0;
+            --btn-cancel-bg: #e8e8e8;
+            --btn-cancel-text: #666666;
+            --delete-btn-color: #cccccc;
+            --timer-ring-bg: #e8e8e8;
+            --timer-preset-bg: #ffffff;
+            --timer-preset-border: #e8e8e8;
+            --timer-preset-text: #666666;
+        }
+
+        body.dark {
+            --bg-card: #1e1e2e;
+            --bg-item: #2a2a3d;
+            --bg-input: #2a2a3d;
+            --border-input: #3a3a50;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0c0;
+            --text-muted: #808090;
+            --text-faint: #606070;
+            --text-notes: #9090a0;
+            --border-stats: #2a2a3d;
+            --btn-cancel-bg: #2a2a3d;
+            --btn-cancel-text: #b0b0c0;
+            --delete-btn-color: #606070;
+            --timer-ring-bg: #3a3a50;
+            --timer-preset-bg: #2a2a3d;
+            --timer-preset-border: #3a3a50;
+            --timer-preset-text: #b0b0c0;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -18,6 +62,7 @@
             display: flex;
             justify-content: center;
             padding: 60px 20px;
+            transition: background 0.3s;
         }
 
         .container {
@@ -26,16 +71,18 @@
         }
 
         .card {
-            background: white;
+            background: var(--bg-card);
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             overflow: hidden;
+            transition: background 0.3s;
         }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 32px 28px 28px;
             color: white;
+            position: relative;
         }
 
         .header h1 {
@@ -68,7 +115,7 @@
             display: block;
             font-size: 12px;
             font-weight: 600;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -78,12 +125,14 @@
         .form-group textarea {
             width: 100%;
             padding: 10px 14px;
-            border: 2px solid #e8e8e8;
+            border: 2px solid var(--border-input);
             border-radius: 10px;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.3s, color 0.3s;
             font-family: inherit;
+            background: var(--bg-input);
+            color: var(--text-primary);
         }
 
         .form-group input:focus,
@@ -125,8 +174,8 @@
         }
 
         .btn-cancel {
-            background: #e8e8e8;
-            color: #666;
+            background: var(--btn-cancel-bg);
+            color: var(--btn-cancel-text);
         }
 
         .btn-cancel:hover {
@@ -139,7 +188,7 @@
 
         .workout-item {
             padding: 16px;
-            background: #f9f9fb;
+            background: var(--bg-item);
             border-radius: 10px;
             margin-bottom: 8px;
             transition: transform 0.15s, box-shadow 0.15s;
@@ -159,12 +208,12 @@
 
         .workout-item-header h3 {
             font-size: 16px;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .workout-item-header .date {
             font-size: 12px;
-            color: #999;
+            color: var(--text-muted);
         }
 
         .workout-details {
@@ -176,7 +225,7 @@
 
         .workout-detail {
             font-size: 13px;
-            color: #666;
+            color: var(--text-secondary);
         }
 
         .workout-detail strong {
@@ -185,7 +234,7 @@
 
         .workout-notes {
             font-size: 13px;
-            color: #888;
+            color: var(--text-notes);
             font-style: italic;
             margin-bottom: 8px;
         }
@@ -215,7 +264,7 @@
         }
 
         .delete-btn {
-            color: #ccc;
+            color: var(--delete-btn-color);
         }
 
         .delete-btn:hover {
@@ -225,7 +274,7 @@
 
         .empty-message {
             text-align: center;
-            color: #b0b0b0;
+            color: var(--text-faint);
             padding: 40px 0;
             font-size: 15px;
         }
@@ -234,13 +283,13 @@
             display: flex;
             justify-content: space-between;
             padding: 16px 24px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--border-stats);
             font-size: 13px;
-            color: #999;
+            color: var(--text-muted);
         }
 
         .timer-section {
-            background: #f9f9fb;
+            background: var(--bg-item);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
@@ -250,7 +299,7 @@
         .timer-section h3 {
             font-size: 14px;
             font-weight: 600;
-            color: #666;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 16px;
@@ -266,12 +315,12 @@
 
         .timer-presets button {
             padding: 6px 14px;
-            border: 2px solid #e8e8e8;
+            border: 2px solid var(--timer-preset-border);
             border-radius: 8px;
-            background: white;
+            background: var(--timer-preset-bg);
             font-size: 13px;
             font-weight: 600;
-            color: #666;
+            color: var(--timer-preset-text);
             cursor: pointer;
             transition: border-color 0.2s, color 0.2s, background 0.2s;
         }
@@ -290,7 +339,7 @@
         .timer-display {
             font-size: 64px;
             font-weight: 700;
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 16px;
             font-variant-numeric: tabular-nums;
             line-height: 1;
@@ -338,8 +387,8 @@
         }
 
         .timer-reset {
-            background: #e8e8e8;
-            color: #666;
+            background: var(--btn-cancel-bg);
+            color: var(--btn-cancel-text);
         }
 
         .timer-reset:hover {
@@ -368,7 +417,7 @@
             transform: translate(-50%, -50%);
             font-size: 28px;
             font-weight: 700;
-            color: #333;
+            color: var(--text-primary);
             font-variant-numeric: tabular-nums;
         }
 
@@ -378,6 +427,44 @@
 
         .timer-progress .timer-text.done {
             color: #27ae60;
+        }
+
+        .dark-toggle {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.3s;
+        }
+
+        .dark-toggle::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        body.dark .dark-toggle::after {
+            transform: translateX(20px);
+        }
+
+        .dark-toggle-label {
+            position: absolute;
+            top: 56px;
+            right: 24px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .motivation-banner {
@@ -423,6 +510,7 @@
             <div class="header">
                 <h1>Workout Tracker</h1>
                 <p>Log your exercises, track your progress</p>
+                <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode"></button>
             </div>
 
             <div class="body">
@@ -470,7 +558,7 @@
                     </div>
                     <div class="timer-progress">
                         <svg width="120" height="120">
-                            <circle cx="60" cy="60" r="52" fill="none" stroke="#e8e8e8" stroke-width="8" />
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--timer-ring-bg)" stroke-width="8" />
                             <circle class="progress-ring" id="progress-ring" cx="60" cy="60" r="52" fill="none" stroke="url(#timer-gradient)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="0" />
                             <defs>
                                 <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -738,6 +826,19 @@
             const data = await response.json();
             document.getElementById("motivation-img").src = data.url;
             document.getElementById("motivation-quote").textContent = `"${data.quote}"`;
+        }
+
+        // --- Dark Mode ---
+        // Toggle dark mode on/off and save preference to localStorage
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark");
+            const isDark = document.body.classList.contains("dark");
+            localStorage.setItem("darkMode", isDark ? "on" : "off");
+        }
+
+        // Restore dark mode preference on page load
+        if (localStorage.getItem("darkMode") === "on") {
+            document.body.classList.add("dark");
         }
 
         // Load workouts and motivation when the page first loads
