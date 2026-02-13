@@ -44,6 +44,34 @@ motivational_images = [
     },
 ]
 
+# A list of motivational YouTube video IDs for workout inspiration
+motivational_videos = [
+    {
+        "video_id": "0lGfnOHRLmY",
+        "title": "Best Workout Motivation",
+    },
+    {
+        "video_id": "hV63DbQ_qSc",
+        "title": "NO EXCUSES - Motivational Video",
+    },
+    {
+        "video_id": "mgmVOuLgFB0",
+        "title": "Dream - Motivational Video",
+    },
+    {
+        "video_id": "WTf5EUMr0Xk",
+        "title": "Rise and Grind - Workout Motivation",
+    },
+    {
+        "video_id": "7m16dFI1AF4",
+        "title": "BELIEVE IN YOURSELF - Motivational Video",
+    },
+    {
+        "video_id": "wnHW6o8WMas",
+        "title": "DISCIPLINE - Motivational Video",
+    },
+]
+
 # A list to store our workouts in memory (resets when the server restarts)
 workouts = []
 
@@ -164,6 +192,15 @@ def get_motivation():
     # Pick a random image/quote pair from the list
     pick = random.choice(motivational_images)
     # Return the image URL and quote as JSON
+    return jsonify(pick), 200
+
+
+# Define a route for GET /motivation-video — this returns a random motivational YouTube video
+@app.route("/motivation-video", methods=["GET"])
+def get_motivation_video():
+    # Pick a random video from the list
+    pick = random.choice(motivational_videos)
+    # Return the video ID and title as JSON
     return jsonify(pick), 200
 
 
